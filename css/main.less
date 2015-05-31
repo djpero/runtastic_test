@@ -36,19 +36,32 @@ section#content {
     box-sizing: border-box;
 }
 
-section#content #table-pagination {
+section#content .table-footer  {
     margin-top:2px;
     margin-bottom:8px;
     width:100%;
     border-top: 2px solid #ddd;
     display:none;
+    float:left;
 }
-section#content #table-pagination p.pages {
+section#content .table-footer #table-order {
+    width:30%;
+    float:left;   
+    text-align:right;
+}
+section#content .table-footer #table-order select {
+    margin-top:12px;
+}
+section#content .table-footer #table-pagination {
+    width:70%;
+    float:left;
+}
+section#content .table-footer #table-pagination p.pages {
     color:#555;
     padding-top:6px;
     font-size:0.9em;
 }
-section#content #table-pagination p.nav {
+section#content .table-footer #table-pagination p.nav {
     float:left;
     margin-right:12px;
     font-size:1em;
@@ -219,7 +232,7 @@ article#popup-detail-view #footer button:hover {
         font-size:0.8em;
     }
     table th, td {
-        height:36px;
+        height:32px;
     }
     article#popup-detail-view {
         width:640px;
