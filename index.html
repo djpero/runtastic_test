@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Runtastic test</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,300' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+</head>
+<body>
+	<header>
+		<img class="logo" src="img/runtastic-logo.png">
+	</header>
+	<section id="content">
+		<table id="table_run_sessions">
+			<thead>
+				<th class="sortable" data-sort-key="id">ID</th>
+				<th class="sortable" data-sort-key="start_time">START TIME</th>
+				<th class="sortable" data-sort-key="end_time">END TIME</th>
+				<th class="sortable" data-sort-key="duration">DURATION</th>
+				<th class="sortable" data-sort-key="distance">DISTANCE</th>
+				<th class="sortable" data-sort-key="sport_type_id">SPORT TYPE ID</th>
+			</thead>
+			<tbody>
+				<tr>
+					<td colspan="6"><p class="loading-data">LOADING DATA</p></td>
+				</tr>				
+			</tbody>
+		</table>
+		<div id="table-pagination">
+			<p id="prev" class="nav">Prev</p>
+			<p id="next" class="nav">Next</p>
+			<p id="current-avaiable" class="pages"></p>
+		</div>
+
+	</section>
+	<footer>
+
+	</footer>
+	<script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript">
+
+		$( document ).ready(function() {
+		    // ------ initial load default data from dataserver
+		    loadTableData('default');
+		});
+		
+		function loadTableData(action) {
+			var dataServer = 'http://intense-bastion-3210.herokuapp.com';
+			var query;
+			if (action == 'default') {
+				query = '';
+			} else {
+				param = action.split("|");
+				query = 'page='+param[0]+'&sort_by='+param[1]+'&order='+param[2];
+			}
+			$.ajax({
+			    url : dataServer,
+			    data : query,
+			    dataType:'json',
+			    success : function(data) {
+			    	$('#table_run_sessions tbody').empty();
+			    	var paging = data.meta.pagination;
+			    	var tr;            
+			         $.each(data.run_sessions, function(i, item) {
+			         	var start_time = new Date(item.start_time);
+			         	var end_time = new Date(item.end_time);
+			         	tr = $("<tr/>");
+					    tr.append("<td>" + item.id + "</td>");
+			            tr.append("<td>" + formatDate(start_time) + "</td>");
+			            tr.append("<td>" + formatDate(end_time) + "</td>");
+			            tr.append("<td>" + item.duration + "</td>");
+			            tr.append("<td>" + item.distance + "</td>");
+			            tr.append("<td>" + item.sport_type_id + "</td>");
+			            $('#table_run_sessions tbody').append(tr);
+
+					 });
+					 // do some pagination
+					 $('#table-pagination').show();
+					 $('#table-pagination #current-avaiable').html("Showing "+paging.page+" of "+paging.available_pages+" available pages.");
+					 $('#table-pagination #next').attr('page-nav',parseInt(paging.page)+1).attr('page-sort-by',paging.sort_by).attr('page-order',paging.order);
+					 $('#table-pagination #prev').attr('page-nav',parseInt(paging.page)-1).attr('page-sort-by',paging.sort_by).attr('page-order',paging.order);
+					 $('#table_run_sessions').attr('current_page', paging.page);
+					 if (paging.page == '1') {
+					 	$('#table-pagination #prev').addClass('disabled');
+					 	$('#table-pagination #prev').attr('page-nav','-');
+					 } else if (paging.page == paging.available_pages) {
+					 	$('#table-pagination #next').addClass('disabled');
+					 	$('#table-pagination #next').attr('page-nav','-');
+					 } else {
+					 	$('#table-pagination .nav').removeClass('disabled');
+					 }
+
+					 
+			    },
+			    error : function(request,error)
+			    {
+			        alert("Request: "+JSON.stringify(request));
+			    }
+			});
+			
+
+		}
+		$('#table-pagination .nav').click(function() {
+			var page_nav = $(this).attr('page-nav');
+			var page_sort = $(this).attr('page-sort-by');
+			var page_order = $(this).attr('page-order');
+		 	if ($(this).attr('page-nav') !== '-') {
+		 		loadTableData(page_nav+'|'+page_sort+"|"+page_order);
+		 	}
+		 });
+		$('#table_run_sessions th.sortable').click(function() {
+			
+			$('#table_run_sessions th.sortable').removeClass('selAsc').removeClass('selDesc');
+			$('#table_run_sessions th.sortable').removeAttr('data-sort-order');
+			if ($(this).attr('data-sort-active')=='true') {
+				$(this).removeAttr('data-sort-active');	
+				$(this).addClass('selDesc');
+				$(this).attr('data-sort-order', 'desc');
+			} else {
+				$(this).attr('data-sort-order', 'asc');
+				$(this).addClass('selAsc');
+				$(this).attr('data-sort-active', 'true');
+			}
+			var current_sort_order = $(this).attr('data-sort-order');
+			loadTableData('1|'+$(this).attr('data-sort-key')+"|"+current_sort_order);
+		});
+		function formatDate(date){
+			var hours = date.getHours();
+			var minutes = date.getMinutes();
+			var day = date.getDate();
+			var month = date.getMonth()+1;
+			minutes = minutes < 10 ? '0'+minutes : minutes;
+			hours = hours < 10 ? '0'+hours : hours;
+			day = day < 10 ? '0'+day : day;
+			month = month < 10 ? '0'+month : month;
+			var strTime = hours + '.' + minutes
+			return  day+ "." + month  + "." + date.getFullYear() + ", " + strTime;
+
+		}	
+
+	</script>
+</body>
+</html>
